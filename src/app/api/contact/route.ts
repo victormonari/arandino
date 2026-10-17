@@ -32,8 +32,9 @@ export async function POST(request: Request) {
   }
   const { data } = result;
 
+  const siteUrl = new URL(request.url).origin;
   const resend = new Resend(RESEND_API_KEY);
-  const team = teamEmail(type, data);
+  const team = teamEmail(type, data, siteUrl);
   const { error } = await resend.emails.send({
     from: RESEND_FROM_EMAIL,
     to: CONTACT_TO_EMAIL.split(",").map((e) => e.trim()),
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
 
   // La confirmación al cliente no bloquea la respuesta si falla
   // (por ejemplo, con onboarding@resend.dev solo se puede enviar al dueño de la cuenta)
-  const confirmation = data.correo ? customerEmail(type, data) : null;
+  const confirmation = data.correo ? customerEmail(type, data, siteUrl) : null;
   if (confirmation) {
     const { error: confirmationError } = await resend.emails.send({
       from: RESEND_FROM_EMAIL,
